@@ -97,6 +97,14 @@ System receive, validate and store. **So ETL is the best match.**
 
 For this approach, as the Schema is fixed as per Q2, any SQL DB should do the trick.**I'll use Postgres.**
 
+9. Summary of REST fundamentals RESTful best practices:
+
+Answer in [THIS](./REST_refresh.md) document.
+
+10. Can all users access all the uploaded data, or there must be any kind of management?
+
+Data Governance wise there should be a management on who can access the data (for instance using user groups). But to not overcomplicate the challenge we will assume all users can access all data.
+
 ## What I know/ What I learned
 
 ### I know
@@ -120,3 +128,5 @@ For this approach, as the Schema is fixed as per Q2, any SQL DB should do the tr
 4. [Using the CSV format in AWS Glue](https://docs.aws.amazon.com/glue/latest/dg/aws-glue-programming-etl-format-csv-home.html)
 5. [Batch vs. streaming data processing](https://docs.databricks.com/aws/en/data-engineering/batch-vs-streaming)
 6. [ETL vs ELT](https://aws.amazon.com/compare/the-difference-between-etl-and-elt/)
+7. [File upload best practices](https://www.speakeasy.com/api-design/file-uploads)
+8. [OWASP Secure file upload](https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html)
