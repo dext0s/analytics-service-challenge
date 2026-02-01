@@ -1,9 +1,12 @@
 import logging
-from .conf import LOG_LEVEL
+from .conf import LOG_LEVEL, dump_config
 
-logging.basicConfig(level=LOG_LEVEL)
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
+logger.setLevel(LOG_LEVEL)
+logging.basicConfig(level=logging.getLevelName(LOG_LEVEL))
 
+if LOG_LEVEL == "DEBUG":
+    logger.debug("ENV VAR Configuration:\n" + dump_config())
 
 STATUS_CODE = {
     "OK": 200,
@@ -11,6 +14,7 @@ STATUS_CODE = {
     "PARSING_ERROR": 500,
     "MISSING_FIELDS": 500,
     "CONSTRAINT_VIOLATION": 500,
+    "TRANSFORMATION_ERROR": 500,
     "DB_ERROR": 500,
     "UNKNOWN_ERROR": 500,
 }
@@ -20,6 +24,7 @@ ERROR_MSG = {
     "PARSING_ERROR": "There was an error processing the data. Please try again later.",
     "MISSING_FIELDS": "Required fields are missing from the data.",
     "CONSTRAINT_VIOLATION": "The data violates one or more constraints.",
+    "TRANSFORMATION_ERROR": "There was an error during data transformation.",
     "UNKNOWN_ERROR": "An unknown error occurred.",
 }
 
