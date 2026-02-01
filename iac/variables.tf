@@ -3,7 +3,6 @@ data "aws_region" "current" {}
 data "aws_availability_zones" "available" {}
 
 data "aws_caller_identity" "current" {}
-
 variable "app-name" {
   type    = string
   default = "clinical-reports"
@@ -38,24 +37,30 @@ variable "lambda-source-path" {
 variable "lambda-layer-paths" {
   type    = map(string)
   default = {
-    sqlAlchemy = "../src/layer_SQLAlchemy"
-    pandas = "../src/layer_pandas"
+    pandas = "../src/layer_pandera"
   }
 }
 variable "lambda-timeout" {
   type    = number
   default = 29
 }
-variable "python-runtime" {
+variable "lambda-python-version" {
   type    = string
-  default = "python3.13"
+  default = "3.13"
+}
+variable "lambda-arch" {
+  type    = string
+  default = "x86_64"
 }
 variable "aurora-postgresql-version" {
   type    = string
   default = "13.20"
 }
+variable "rds-table-name" {
+  type    =  string
+  default = "clinical_reports"
+}
 locals {
-  #lambda-handlers-method-map = {upload_reports_handler={path = "/clinical-reports", http_method = "POST", lambda_handler = "upload_reports_handler"}}
   lambda-handlers-method-map = {
     for item in flatten([
       for path, cfg in var.rest-api-paths : [
@@ -71,4 +76,6 @@ locals {
       lambda_handler = item.handler
     }
   }
+  lambda-layer-awswrangler-arn="arn:aws:lambda:${data.aws_region.current.name}:336392948345:layer:AWSSDKPandas-Python${replace(var.lambda-python-version,".","")}:6"
+  layer-list = concat([local.lambda-layer-awswrangler-arn],[for layer in values(module.lambda_layer_local) : layer.lambda_layer_arn])
 }
