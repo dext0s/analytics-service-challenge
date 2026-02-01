@@ -26,19 +26,23 @@ class ClinicalReportSchemaPersistence(pa.DataFrameModel):
 
 
 class ClinicalReport:
-    def __init__(self, df: pd.DataFrame, uid: str = None, epoch: int = None):
+    def __init__(self, df: pd.DataFrame, t_df: pd.DataFrame = None, uid: str = None, epoch: int = None):
         self.df = df
+        self.t_df = t_df
         self.uid = uid if uid is not None else str(uuid.uuid4())
         self.epoch = epoch if epoch is not None else int(time.time() * 1000)
 
     def get_df(self):
         return self.df
 
-    def transform(self):
-        if self.t_df is None:
-            self.t_df = (
-                self.df.copy().insert(0, "UID", self.uid).insert(1, "Epoch", self.epoch)
-            )
+    def get_transform_df(self):
+        try:
+            if self.t_df is None:
+                self.t_df = self.df.copy()
+                self.t_df.insert(0, "UID", self.uid)
+                self.t_df.insert(1, "Epoch", self.epoch)
+        except Exception as e:
+            raise HTTPException("TRANSFORMATION_ERROR", str(e))
         return self.t_df
 
     def get_json(self, with_metadata: bool = False):
@@ -60,3 +64,14 @@ class ClinicalReport:
         except pa.errors.SchemaError as e:
             raise HTTPException("CONSTRAINT_VIOLATION", str(e))
         return ClinicalReport(df, uid=uid, epoch=epoch)
+
+    @classmethod
+    def from_transform_df(cls, t_df: pd.DataFrame):
+        try:
+            t_df = ClinicalReportSchemaPersistence.validate(t_df)
+            uid = t_df["UID"].iloc[0]
+            epoch = t_df["Epoch"].iloc[0]
+            df = t_df.drop(columns=["UID", "Epoch"])
+        except pa.errors.SchemaError as e:
+            raise HTTPException("CONSTRAINT_VIOLATION", str(e))
+        return ClinicalReport(df, t_df=t_df, uid=uid, epoch=epoch)
