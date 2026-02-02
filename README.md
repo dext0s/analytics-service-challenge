@@ -39,6 +39,7 @@ Flow diagrams:
 1. Add pagination
 2. Add better support for queries
 3. Reconsider identifier. Maybe use MD5.
+4. Load test, synchronous do not scale well for large loads. Revisit requisite of sync validation.
 
 ## Infrastructure code
 
@@ -120,7 +121,16 @@ python3 src/lambda_handlers.py --handler get_reports_handler
 # GET REPORT (example uid)
 python3 src/lambda_handlers.py --handler get_reports_handler --uid "35fcd1d9-359d-4b84-b62c-6999a5d03ea6"
 ```
+To generate random sets of tests for stress testing the system you can use te followig script
+```bash
+# Approx 30000 are 1MB, so arround 180000 should be the limit the API can accept. 
+# API times out much sooner than the limit size
+python3 test/test_csv_generator.py -n 150000
 
+source ./terraform_outputs_source.sh
+export AWS_DEFAULT_REGION="${AWS_REGION}"
+python3 src/lambda_handlers.py --handler upload_reports_handler --csv_file ./generated_clinical_reports_150000.csv
+```
 ## Full deploy API
 
 As the whole application deployment and infrastructure is handled by terraform, follow [Infrastructure Code](#infrastructure-code).
