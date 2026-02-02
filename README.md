@@ -9,9 +9,36 @@ More details on the reasoning [HERE](./docu/challenge_definition.md).
 
 ## Design summary
 
-TO_DO: Overview 
+Given the restrictions and deductions from the [Challenge Definition](./docu/challenge_definition.md) the main design decisions are:
 
-More detail on the design [HERE](./docu/proposed_design.md)
+- Using **REST API GW + Lambda** to publish the service and process the data.
+- Opted for Sync method to validate so max time of transaction is **29 seconds**.
+- Due to **REST API GW + Lambda** integration max CSV file is 6MB.
+- Storing in Serverless Prostgress RDS as easy to setup and scale.
+- Following REST principals to upload we use POST (could have used PUT too) and GET to fetch the data.
+
+Diagram of the infra:
+![Infra_diagram](./docu/resources/infra_diagram.png)
+
+As per the library decisions:
+
+- Pandas + Pandera: Standard tools to work with Dataframes. Great to check the Schema and validation and suport to build from CSV and parse into JSON.
+
+- AWS Wrangler: Pandas SDK to integrate with many AWS services such as RDS. Easy way to build the persistance code.
+
+Flow diagrams:
+
+- Upload report:
+![upload_wf](./docu/resources/post_diagram.png)
+- Get report ID list:
+![get_id_list](./docu/resources/get_list_diagram.png)
+- Get report:
+![get_report](./docu/resources/get_report_diagram.png)
+
+### Improvements for the future:
+1. Add pagination
+2. Add better support for queries
+3. Reconsider identifier. Maybe use MD5.
 
 ## Infrastructure code
 

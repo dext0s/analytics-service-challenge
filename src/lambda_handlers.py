@@ -1,5 +1,4 @@
 import argparse
-import uuid
 import time
 from clinical_reports.logs import logger, HTTPException
 from clinical_reports.clinical_report import ClinicalReport, check_uid
