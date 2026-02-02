@@ -1,7 +1,6 @@
 from clinical_reports.logs import logger, HTTPException
-from clinical_reports.clinical_report import ClinicalReport
+from clinical_reports.clinical_report import ClinicalReport, check_uid
 from clinical_reports.db import db_store_clinical_report, db_get_clinical_report_list, db_get_clinical_report
-
 
 def upload_reports_handler(event, context):
     try:
@@ -22,16 +21,15 @@ def upload_reports_handler(event, context):
 def get_reports_handler(event, context):
     try:
         query_params = event.get("queryStringParameters", None)
-        if not query_params == None:
-            uid = query_params.get("uid", None)
-            # ensure UID is UID format
-            if uid is None:
-                raise HTTPException("UNKNOWN_QUERY_PARAMS", "Currently only support 'uid' as query parameter.")
-            report = db_get_clinical_report(uid=uid)
-            return {"statusCode": 200, "body": report.get_json()}
-        else:
+        if query_params is None:
             list_of_reports = db_get_clinical_report_list()
             return {"statusCode": 200, "body": list_of_reports.to_json(orient="records")}
+        else:
+            uid = query_params.get("uid", None)
+            if uid is None: raise HTTPException("UNKNOWN_QUERY_PARAMS", "Currently only support 'uid' as query parameter.")
+            check_uid(uid)
+            report = db_get_clinical_report(uid=uid)
+            return {"statusCode": 200, "body": report.get_json()}
     except HTTPException as e:
         logger.error(f"Error fetching report: {e.error_msg}")
         return e.to_dict()
