@@ -16,9 +16,10 @@ variable "rest-api-paths" {
   }))
   default = {
     "/clinical-reports" = {
-      methods = { "POST" = {
-        lambda_handler = "upload_reports_handler"
-      } }
+      methods = { 
+        "POST" = { lambda_handler = "upload_reports_handler"}
+        "GET" = { lambda_handler = "get_reports_handler"}
+      }
     }
   }
 }

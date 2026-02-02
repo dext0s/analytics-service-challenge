@@ -80,7 +80,16 @@ terraform fmt -recursive iac
 
 You can use the following command to test:
 ```bash
-api_endpoint="https://YOUR_API_GATEWAY_ID.execute-api.us-east-1.amazonaws.com/v1/clinical-reports"
+# Push a report
+base_url="https://YOUR_API_GATEWAY_ID.execute-api.us-east-1.amazonaws.com"
+api_endpoint="${base_url}/v1/clinical-reports"
 curl --request POST -H "Content-Type: text/csv" --data-binary "@./test/example.csv" "$api_endpoint"
+
+# Get the list of pushed reports UIDs
+curl --request GET "$api_endpoint"
+
+# Get back the value of a certain record:
+uri="35fcd1d9-359d-4b84-b62c-6999a5d03ea6"
+curl --request GET "${api_endpoint}?uri=${uri}"
 ```
 **Author: Xavier Torres**

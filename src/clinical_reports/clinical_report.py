@@ -47,7 +47,7 @@ class ClinicalReport:
 
     def get_json(self, with_metadata: bool = False):
         if with_metadata:
-            md = json.dumps({"uid": self.uid, "epoch": self.epoch})
+            md = json.dumps({"UID": self.uid, "Epoch": self.epoch})
             data = self.df.to_json(orient="records")
             return f"{md},{data}"
         return self.df.to_json(orient="records")
@@ -71,7 +71,7 @@ class ClinicalReport:
             t_df = ClinicalReportSchemaPersistence.validate(t_df)
             uid = t_df["UID"].iloc[0]
             epoch = t_df["Epoch"].iloc[0]
-            df = t_df.drop(columns=["UID", "Epoch"])
+            df = t_df.copy().drop(columns=["UID", "Epoch"])
         except pa.errors.SchemaError as e:
             raise HTTPException("CONSTRAINT_VIOLATION", str(e))
         return ClinicalReport(df, t_df=t_df, uid=uid, epoch=epoch)

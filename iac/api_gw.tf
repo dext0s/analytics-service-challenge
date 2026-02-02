@@ -13,7 +13,7 @@ resource "aws_api_gateway_rest_api" "api-gw" {
         for method, conf in v.methods : lower(method) => {
           x-amazon-apigateway-integration = {
             uri        = module.lambdas[conf.lambda_handler].lambda_function_invoke_arn
-            httpMethod = method
+            httpMethod = "POST" # LAMBDA invocations use POST
             type       = "aws_proxy"
           }
         }

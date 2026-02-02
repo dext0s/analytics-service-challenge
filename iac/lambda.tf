@@ -16,7 +16,7 @@ module "lambdas" {
   docker_image        = "public.ecr.aws/sam/build-python${var.lambda-python-version}:latest-x86_64"
   # Config
   environment_variables = {
-    LOG_LEVEL       = "DEBUG"
+    LOG_LEVEL       = "INFO"
     DB_SECRET_ARN   = aws_rds_cluster.rds-cluster.master_user_secret[0].secret_arn
     DB_RESOURCE_ARN = aws_rds_cluster.rds-cluster.arn
     DB_NAME         = aws_rds_cluster.rds-cluster.database_name

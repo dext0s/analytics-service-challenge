@@ -1,11 +1,9 @@
 from clinical_reports.logs import logger, HTTPException
 from clinical_reports.clinical_report import ClinicalReport
-from clinical_reports.db import db_store_clinical_report
+from clinical_reports.db import db_store_clinical_report, db_get_clinical_report_list, db_get_clinical_report
 
 
 def upload_reports_handler(event, context):
-    logger.debug(f"EVENT: {event}")
-    logger.debug(f"CONTEXT: {context}")
     try:
         raw_data = event["body"]
         request_id = event["requestContext"]["requestId"]
@@ -21,20 +19,25 @@ def upload_reports_handler(event, context):
     return {"statusCode": 200, "body": report.get_json(with_metadata=True)}
 
 
-# def get_reports_list_handler(event: dict, context: dict):
-#     logger.debug(f"EVENT: {event}")
-#     logger.debug(f"CONTEXT: {context}")
-#     return {
-#         "statusCode": 200,
-#     }
-
-
-# def get_report_handler(event: dict, context: dict):
-#     logger.debug(f"EVENT: {event}")
-#     logger.debug(f"CONTEXT: {context}")
-#     return {
-#         "statusCode": 200,
-#     }
+def get_reports_handler(event, context):
+    try:
+        query_params = event.get("queryStringParameters", None)
+        if not query_params == None:
+            uid = query_params.get("uid", None)
+            # ensure UID is UID format
+            if uid is None:
+                raise HTTPException("UNKNOWN_QUERY_PARAMS", "Currently only support 'uid' as query parameter.")
+            report = db_get_clinical_report(uid=uid)
+            return {"statusCode": 200, "body": report.get_json()}
+        else:
+            list_of_reports = db_get_clinical_report_list()
+            return {"statusCode": 200, "body": list_of_reports.to_json(orient="records")}
+    except HTTPException as e:
+        logger.error(f"Error fetching report: {e.error_msg}")
+        return e.to_dict()
+    except Exception as e:
+        logger.error(f"UNKNOWN_ERROR: {str(e)}")
+        return HTTPException("UNKNOWN_ERROR").to_dict()
 
 if __name__ == "__main__":
     mock_event = dict(
