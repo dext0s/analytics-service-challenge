@@ -9,30 +9,9 @@ More details on the reasoning [HERE](./docu/challenge_definition.md).
 
 ## Design summary
 
-TO_DO define meaninguful examples 
 TO_DO
 
 More detail on the design [HERE](./docu/proposed_design.md)
-
-## Backend local development
-
-### Pre requisites
-- Install Python 3.13
-- Install and configure AWS CLI
-- Bash shell
-### Lambda code
-
-To locally develop the python code for the lambda we use venv. To set it up run:
-```bash
-# Setup venv and install dependencies
-pip3 install virtualenv
-python3 -m venv venv
-source venv/bin/activate
-pip3 install -r src/requirements.txt
-```
-
-#### Testing
-TO_DO
 
 ## Infrastructure code
 
@@ -57,7 +36,7 @@ export AWS_REGION="eu-central-1"
 bash setup/terraform_pre_req.sh
 # Initialize terraform state
 bash setup/terraform_setup.sh iac
-# Mac workarround, pull build docker image:
+# Mac workarround to build python deps, pull build docker image:
 docker pull public.ecr.aws/sam/build-python3.13:latest-x86_64
 ```
 
@@ -66,30 +45,66 @@ docker pull public.ecr.aws/sam/build-python3.13:latest-x86_64
 To test terraform code we run a linting check, then a validation and finally a plan:
 ```bash
 bash ./setup/terraform_test.sh iac
-# To automatically fix linting issues run:
-terraform fmt -recursive iac
 ```
 
-## Setup
-
-### Pre Requisites
-    TO_DO
 ### Deploy
-    TO_DO
-### Test
+
+To deploy the infrastructure configuration run:
+```bash
+bash ./setup/terraform_deploy.sh iac
+```
+
+## Backend local development
+
+### Pre requisites
+- Install Python 3.13
+- Install and configure AWS CLI
+- Deployed infra
+- Bash shell
+### Lambda code
+
+To locally develop the python code for the lambda we use venv. To set it up run:
+```bash
+# Setup venv and install dependencies
+pip3 install virtualenv
+python3 -m venv venv
+source venv/bin/activate
+pip3 install -r src/full_requirements.txt
+``` 
+
+### Testing
+
+```bash
+source venv/bin/activate
+source ./terraform_outputs_source.sh
+# Ensure proper region is used by CLI and Lambda
+export AWS_DEFAULT_REGION="${AWS_REGION}"
+# UPLOAD FILE
+python3 src/lambda_handlers.py --handler upload_reports_handler --csv_file ./test/example.csv
+# GET LIST
+python3 src/lambda_handlers.py --handler get_reports_handler
+# GET REPORT (example uid)
+python3 src/lambda_handlers.py --handler get_reports_handler --uid "35fcd1d9-359d-4b84-b62c-6999a5d03ea6"
+```
+
+## Full deploy API
+
+As the whole application deployment and infrastructure is handled by terraform, follow [Infrastructure Code](#infrastructure-code).
+
+### Test
 
 You can use the following command to test:
 ```bash
+source ./terraform_outputs_source.sh
 # Push a report
-base_url="https://YOUR_API_GATEWAY_ID.execute-api.us-east-1.amazonaws.com"
-api_endpoint="${base_url}/v1/clinical-reports"
+api_endpoint="${api_endpoint_url}/clinical-reports"
 curl --request POST -H "Content-Type: text/csv" --data-binary "@./test/example.csv" "$api_endpoint"
 
 # Get the list of pushed reports UIDs
 curl --request GET "$api_endpoint"
 
 # Get back the value of a certain record:
-uri="35fcd1d9-359d-4b84-b62c-6999a5d03ea6"
-curl --request GET "${api_endpoint}?uri=${uri}"
+uid="35fcd1d9-359d-4b84-b62c-6999a5d03ea6"
+curl --request GET "${api_endpoint}?uid=${uid}"
 ```
 **Author: Xavier Torres**
