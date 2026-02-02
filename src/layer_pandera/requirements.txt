@@ -1,0 +1,10 @@
+annotated-types==0.7.0
+mypy_extensions==1.1.0
+packaging==26.0
+pandera==0.29.0
+pydantic==2.12.5
+pydantic_core==2.41.5
+typeguard==4.4.4
+typing-inspect==0.9.0
+typing-inspection==0.4.2
+typing_extensions==4.15.0

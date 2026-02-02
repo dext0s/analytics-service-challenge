@@ -1,0 +1,3 @@
+SubstanceID,DrugName,Target,Efficacy,Toxicity
+SID-12345,Test1,kidney,0.1,0.3
+SID-63582,Test2,heart,0.99,0.05
