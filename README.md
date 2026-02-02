@@ -9,7 +9,7 @@ More details on the reasoning [HERE](./docu/challenge_definition.md).
 
 ## Design summary
 
-TO_DO
+TO_DO: Overview 
 
 More detail on the design [HERE](./docu/proposed_design.md)
 
@@ -21,7 +21,7 @@ Using Terraform to define the infrastructure. As per current requirements there 
 - Install and configure AWS CLI
 - Install Terraform
 - Bash shell
-- Docker (due to Mac compativility issues)
+- Docker (due to Mac compatibility issues)
 
 We are using as backend provider S3 so the Terraform state is persisted.
 
@@ -52,6 +52,7 @@ bash ./setup/terraform_test.sh iac
 To deploy the infrastructure configuration run:
 ```bash
 bash ./setup/terraform_deploy.sh iac
+# This will generate the env vars source output file to do Local Testing
 ```
 
 ## Backend local development
@@ -73,7 +74,13 @@ pip3 install -r src/full_requirements.txt
 ``` 
 
 ### Testing
+For format and linting we are using black:
+```bash
+pip3 install black
+black src
+```
 
+To locally test the functionalities:
 ```bash
 source venv/bin/activate
 source ./terraform_outputs_source.sh

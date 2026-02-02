@@ -62,7 +62,9 @@ if __name__ == "__main__":
         required=True,
         help="Specify which handler to test.",
     )
-    parser.add_argument("--csv_file", type=str, help="Path to CSV file for upload_reports_handler.")
+    parser.add_argument(
+        "--csv_file", type=str, help="Path to CSV file for upload_reports_handler."
+    )
     parser.add_argument("--uid", type=str, help="UID for get_reports_handler.")
     args = parser.parse_args()
     mock_event = dict(
@@ -70,7 +72,7 @@ if __name__ == "__main__":
             "body": "",
             "queryStringParameters": {"uid": args.uid} if args.uid else None,
             "requestContext": {
-                "requestId": "35fcd1d9-359d-4b84-b62c-6999a5d03ea6", # Force a UUID for testing
+                "requestId": "35fcd1d9-359d-4b84-b62c-6999a5d03ea6",  # Force a UUID for testing
                 "requestTimeEpoch": int(time.time() * 1000),
             },
         }

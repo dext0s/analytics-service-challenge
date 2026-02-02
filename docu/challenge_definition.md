@@ -119,6 +119,7 @@ Data Governance wise there should be a management on who can access the data (fo
 1. What is a Data Analytics system.
 2. Best practices to implement a Data Analytics system.
 3. Best practices to implement a RESTful API.
+4. Details on Lambda layer building.
 
 ## Documentation checked
 
