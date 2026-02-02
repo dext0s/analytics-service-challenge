@@ -25,16 +25,25 @@ class ClinicalReportSchemaPersistence(pa.DataFrameModel):
     Efficacy: pa.typing.Series[float]
     Toxicity: pa.typing.Series[float] = pa.Field(nullable=True)
 
+
 def check_uid(uuid_str: str) -> bool:
     if not UID_PATTERN.match(uuid_str):
         raise HTTPException("INVALID_UID_FORMAT", f"UID format is invalid: {uuid_str}")
     return True
 
+
 class ClinicalReport:
-    def __init__(self, df: pd.DataFrame, t_df: pd.DataFrame = None, uid: str = None, epoch: int = None):
+    def __init__(
+        self,
+        df: pd.DataFrame,
+        t_df: pd.DataFrame = None,
+        uid: str = None,
+        epoch: int = None,
+    ):
         self.df = df
         self.t_df = t_df
-        if uid is None: self.uid = str(uuid.uuid4())
+        if uid is None:
+            self.uid = str(uuid.uuid4())
         else:
             check_uid(uid)
             self.uid = uid
