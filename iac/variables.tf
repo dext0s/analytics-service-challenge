@@ -77,6 +77,6 @@ locals {
       lambda_handler = item.handler
     }
   }
-  lambda-layer-awswrangler-arn="arn:aws:lambda:${data.aws_region.current.name}:336392948345:layer:AWSSDKPandas-Python${replace(var.lambda-python-version,".","")}:6"
+  lambda-layer-awswrangler-arn="arn:aws:lambda:${data.aws_region.current.region}:336392948345:layer:AWSSDKPandas-Python${replace(var.lambda-python-version,".","")}:6"
   layer-list = concat([local.lambda-layer-awswrangler-arn],[for layer in values(module.lambda_layer_local) : layer.lambda_layer_arn])
 }

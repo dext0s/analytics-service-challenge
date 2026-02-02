@@ -9,30 +9,37 @@ More details on the reasoning [HERE](./docu/challenge_definition.md).
 
 ## Design summary
 
-TO_DO define meaninguful examples 
-TO_DO
+Given the restrictions and deductions from the [Challenge Definition](./docu/challenge_definition.md) the main design decisions are:
 
-More detail on the design [HERE](./docu/proposed_design.md)
+- Using **REST API GW + Lambda** to publish the service and process the data.
+- Opted for Sync method to validate so max time of transaction is **29 seconds**.
+- Due to **REST API GW + Lambda** integration max CSV file is 6MB.
+- Storing in Serverless Prostgress RDS as easy to setup and scale.
+- Following REST principals to upload we use POST (could have used PUT too) and GET to fetch the data.
 
-## Backend local development
+Diagram of the infra:
+![Infra_diagram](./docu/resources/infra_diagram.png)
 
-### Pre requisites
-- Install Python 3.13
-- Install and configure AWS CLI
-- Bash shell
-### Lambda code
+As per the library decisions:
 
-To locally develop the python code for the lambda we use venv. To set it up run:
-```bash
-# Setup venv and install dependencies
-pip3 install virtualenv
-python3 -m venv venv
-source venv/bin/activate
-pip3 install -r src/requirements.txt
-```
+- Pandas + Pandera: Standard tools to work with Dataframes. Great to check the Schema and validation and suport to build from CSV and parse into JSON.
 
-#### Testing
-TO_DO
+- AWS Wrangler: Pandas SDK to integrate with many AWS services such as RDS. Easy way to build the persistance code.
+
+Flow diagrams:
+
+- Upload report:
+![upload_wf](./docu/resources/post_diagram.png)
+- Get report ID list:
+![get_id_list](./docu/resources/get_list_diagram.png)
+- Get report:
+![get_report](./docu/resources/get_report_diagram.png)
+
+### Improvements for the future:
+1. Add pagination
+2. Add better support for queries
+3. Reconsider identifier. Maybe use MD5.
+4. Load test, synchronous do not scale well for large loads. Revisit requisite of sync validation.
 
 ## Infrastructure code
 
@@ -42,7 +49,7 @@ Using Terraform to define the infrastructure. As per current requirements there 
 - Install and configure AWS CLI
 - Install Terraform
 - Bash shell
-- Docker (due to Mac compativility issues)
+- Docker (due to Mac compatibility issues)
 
 We are using as backend provider S3 so the Terraform state is persisted.
 
@@ -57,7 +64,7 @@ export AWS_REGION="eu-central-1"
 bash setup/terraform_pre_req.sh
 # Initialize terraform state
 bash setup/terraform_setup.sh iac
-# Mac workarround, pull build docker image:
+# Mac workarround to build python deps, pull build docker image:
 docker pull public.ecr.aws/sam/build-python3.13:latest-x86_64
 ```
 
@@ -66,30 +73,82 @@ docker pull public.ecr.aws/sam/build-python3.13:latest-x86_64
 To test terraform code we run a linting check, then a validation and finally a plan:
 ```bash
 bash ./setup/terraform_test.sh iac
-# To automatically fix linting issues run:
-terraform fmt -recursive iac
 ```
 
-## Setup
-
-### Pre Requisites
-    TO_DO
 ### Deploy
-    TO_DO
-### Test
+
+To deploy the infrastructure configuration run:
+```bash
+bash ./setup/terraform_deploy.sh iac
+# This will generate the env vars source output file to do Local Testing
+```
+
+## Backend local development
+
+### Pre requisites
+- Install Python 3.13
+- Install and configure AWS CLI
+- Deployed infra
+- Bash shell
+### Lambda code
+
+To locally develop the python code for the lambda we use venv. To set it up run:
+```bash
+# Setup venv and install dependencies
+pip3 install virtualenv
+python3 -m venv venv
+source venv/bin/activate
+pip3 install -r src/full_requirements.txt
+``` 
+
+### Testing
+For format and linting we are using black:
+```bash
+pip3 install black
+black src
+```
+
+To locally test the functionalities:
+```bash
+source venv/bin/activate
+source ./terraform_outputs_source.sh
+# Ensure proper region is used by CLI and Lambda
+export AWS_DEFAULT_REGION="${AWS_REGION}"
+# UPLOAD FILE
+python3 src/lambda_handlers.py --handler upload_reports_handler --csv_file ./test/example.csv
+# GET LIST
+python3 src/lambda_handlers.py --handler get_reports_handler
+# GET REPORT (example uid)
+python3 src/lambda_handlers.py --handler get_reports_handler --uid "35fcd1d9-359d-4b84-b62c-6999a5d03ea6"
+```
+To generate random sets of tests for stress testing the system you can use te followig script
+```bash
+# Approx 30000 are 1MB, so arround 180000 should be the limit the API can accept. 
+# API times out much sooner than the limit size
+python3 test/test_csv_generator.py -n 150000
+
+source ./terraform_outputs_source.sh
+export AWS_DEFAULT_REGION="${AWS_REGION}"
+python3 src/lambda_handlers.py --handler upload_reports_handler --csv_file ./generated_clinical_reports_150000.csv
+```
+## Full deploy API
+
+As the whole application deployment and infrastructure is handled by terraform, follow [Infrastructure Code](#infrastructure-code).
+
+### Test
 
 You can use the following command to test:
 ```bash
+source ./terraform_outputs_source.sh
 # Push a report
-base_url="https://YOUR_API_GATEWAY_ID.execute-api.us-east-1.amazonaws.com"
-api_endpoint="${base_url}/v1/clinical-reports"
+api_endpoint="${api_endpoint_url}/clinical-reports"
 curl --request POST -H "Content-Type: text/csv" --data-binary "@./test/example.csv" "$api_endpoint"
 
 # Get the list of pushed reports UIDs
 curl --request GET "$api_endpoint"
 
 # Get back the value of a certain record:
-uri="35fcd1d9-359d-4b84-b62c-6999a5d03ea6"
-curl --request GET "${api_endpoint}?uri=${uri}"
+uid="35fcd1d9-359d-4b84-b62c-6999a5d03ea6"
+curl --request GET "${api_endpoint}?uid=${uid}"
 ```
 **Author: Xavier Torres**

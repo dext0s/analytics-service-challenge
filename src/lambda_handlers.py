@@ -1,3 +1,5 @@
+import argparse
+import time
 from clinical_reports.logs import logger, HTTPException
 from clinical_reports.clinical_report import ClinicalReport, check_uid
 from clinical_reports.db import (
@@ -51,18 +53,36 @@ def get_reports_handler(event, context):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--handler",
+        type=str,
+        choices=["upload_reports_handler", "get_reports_handler"],
+        required=True,
+        help="Specify which handler to test.",
+    )
+    parser.add_argument(
+        "--csv_file", type=str, help="Path to CSV file for upload_reports_handler."
+    )
+    parser.add_argument("--uid", type=str, help="UID for get_reports_handler.")
+    args = parser.parse_args()
     mock_event = dict(
         {
-            "body": "SubstanceID,DrugName,Target,Efficacy,Toxicity\nSID-12345,Test1,,0.1,0.3\nSID-67890,Test2,heart,0.99,0.3",
+            "body": "",
+            "queryStringParameters": {"uid": args.uid} if args.uid else None,
             "requestContext": {
-                "requestId": "35fcd1d9-359d-4b84-b62c-6999a5d03ea6",
-                "requestTimeEpoch": 1769475269867,
+                "requestId": "35fcd1d9-359d-4b84-b62c-6999a5d03ea6",  # Force a UUID for testing
+                "requestTimeEpoch": int(time.time() * 1000),
             },
         }
     )
-    # mock_event = dict({'body' : ',,,,ewhrwprhwerhiaiosdh', 'requestContext' : { 'requestId': '35fcd1d9-359d-4b84-b62c-6999a5d03ea6', 'requestTimeEpoch': 1769475269867 }})
-    # mock_event = dict({'body' : 'SubstanceID,DrugName,Target,Efficacy,Toxicity\n,,,,ewhrwprhwerhiaiosdh', 'requestContext' : { 'requestId': '35fcd1d9-359d-4b84-b62c-6999a5d03ea6', 'requestTimeEpoch': 1769475269867 }})
+    if args.handler == "upload_reports_handler" and args.csv_file:
+        with open(args.csv_file, "r") as f:
+            mock_event["body"] = f.read()
 
     mock_context = dict({})
-    response = upload_reports_handler(mock_event, mock_context)
+    if args.handler == "upload_reports_handler":
+        response = upload_reports_handler(mock_event, mock_context)
+    else:
+        response = get_reports_handler(mock_event, mock_context)
     print(response)
