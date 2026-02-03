@@ -9,7 +9,7 @@ resource "aws_rds_cluster" "rds-cluster" {
   database_name                       = "clinical"
   manage_master_user_password         = true
   master_username                     = "clinical_admin"
-
+  skip_final_snapshot                 = true 
   serverlessv2_scaling_configuration {
     max_capacity             = 1.0
     min_capacity             = 0.0
