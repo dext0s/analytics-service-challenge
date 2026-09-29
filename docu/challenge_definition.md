@@ -1,6 +1,3 @@
-
-Classification: CONFIDENTIAL
-
 # Understanding the challenge
 
 ## Senior Backend Engineer - Challenge
@@ -35,8 +32,6 @@ Create a RESTful API using AWS Lambda and API Gateway that allows users to:
 and required fields.
 
 - Ensure to document the code and your approach to the solution
-
-Author: Merck. Confidentianl. Not to be shared except with Merck's interviewers.
 
 ---
 
